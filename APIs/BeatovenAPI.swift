@@ -9,7 +9,7 @@ import Foundation
 
 // Define the API URL and token
 let backendV1ApiUrl = "https://public-api.beatoven.ai/api/v1"
-let backendApiHeaderKey = "2lLBUVyLZgxzlGJlVf_0VQ" // Replace with your actual API key
+let backendApiHeaderKey = "Your API key" // Replace with your actual API key
 
 // Define your track creation data structure
 struct TrackMeta: Codable {

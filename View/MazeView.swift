@@ -15,7 +15,7 @@ struct MazeView: View {
     var fishTTS = FishTTS()
     var ttsManager = TTSManager()
     
-    var openAI = OpenAIAPI(apiKey: "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")
+    var openAI = OpenAIAPI(apiKey: "Your API Key")
     
     var body: some View {
         VStack {

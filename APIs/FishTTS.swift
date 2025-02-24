@@ -39,7 +39,7 @@ enum Actor: String, CaseIterable {
 }
 class FishTTS {
     // API Configuration
-    private let apiToken = "ab525ba58550419c95a938ec123d7245"
+    private let apiToken = "Your API token"
     private let apiUrl = "https://api.fish.audio/v1/tts"
     
     // Audio Configuration
