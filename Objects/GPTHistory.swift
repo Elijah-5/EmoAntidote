@@ -7,13 +7,14 @@
 import SwiftUI
 
 class GPTHistory: ObservableObject {
-    @Published var history: [String] = []
+    @Published var history: [(concise: String?, full: String)] = []
     
-    func addResponse(_ response: String) {
+    func addResponse(concise: String?, full: String) {
         // Ensure this happens on the main thread
         DispatchQueue.main.async {
-            self.history.append(response)
+            self.history.append((concise: concise, full: full))
         }
     }
 }
+
 

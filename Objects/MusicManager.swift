@@ -31,16 +31,46 @@ class MusicLibraryManager: ObservableObject {
     }
 
     // Play music
+//    func playMusic(named trackName: String) {
+//        // Pause any currently playing audio
+//        player?.pause()
+//        player?.seek(to: .zero)
+//        
+//        let filePath = documentsDirectory.appendingPathComponent("\(trackName)_track.mp3")
+//        let playerItem = AVPlayerItem(url: filePath)
+//        player = AVPlayer(playerItem: playerItem)
+//        player?.play()
+//    }
+    
     func playMusic(named trackName: String) {
-        // Pause any currently playing audio
-        player?.pause()
-        player?.seek(to: .zero)
-        
+        // Load the new track URL
         let filePath = documentsDirectory.appendingPathComponent("\(trackName)_track.mp3")
-        let playerItem = AVPlayerItem(url: filePath)
-        player = AVPlayer(playerItem: playerItem)
-        player?.play()
+
+        do {
+            // If audioPlayer is nil, initialize it
+            if audioPlayer == nil {
+                audioPlayer = try AVAudioPlayer(contentsOf: filePath)
+            } else {
+                // If already initialized, just stop and reset
+                audioPlayer?.stop()
+                audioPlayer?.currentTime = 0
+                audioPlayer = try AVAudioPlayer(contentsOf: filePath) // Reinitialize with new track
+            }
+
+            // Ensure audioPlayer is properly initialized
+            guard let audioPlayer = audioPlayer else {
+                print("Error: Failed to initialize audioPlayer")
+                return
+            }
+
+            audioPlayer.prepareToPlay() // Prepare for smooth playback
+            audioPlayer.play() // Play the new track
+
+        } catch {
+            print("Error: Unable to load audio file - \(error.localizedDescription)")
+        }
     }
+
 
     // Add a new track
     func addTrack(named track: String) {

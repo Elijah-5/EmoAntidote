@@ -9,29 +9,29 @@ import Foundation
 import AVFoundation
 
 enum Actor: String, CaseIterable {
-    case maleVoice1 = "Male Voice 1"
-    case maleVoice2 = "Male Voice 2"
-    case maleVoice3 = "Male Voice 3"
-    case maleVoice4 = "Male Voice 4"
-    case femaleVoice1 = "Female Voice 1"
-    case femaleVoice2 = "Female Voice 2"
-    case femaleVoice3 = "Female Voice 3"
+    case Voice1 = "Voice1"
+    case Voice2 = "Voice2"
+    case Voice3 = "Voice3"
+    case Voice4 = "Voice4"
+    case Voice5 = "Voice5"
+    case Voice6 = "Voice6"
+    case Voice7 = "Voice7"
     
     var referenceId: String {
         switch self {
-        case .maleVoice1:
+        case .Voice1:
             return "ef9c79b62ef34530bf452c0e50e3c260"
-        case .maleVoice2:
+        case .Voice2:
             return "e80ea225770f42f79d50aa98be3cedfc"
-        case .maleVoice3:
+        case .Voice3:
             return "e4642e5edccd4d9ab61a69e82d4f8a14"
-        case .maleVoice4:
+        case .Voice4:
             return "59cb5986671546eaa6ca8ae6f29f6d22"
-        case .femaleVoice1:
+        case .Voice5:
             return "56431e329b21489c9f9f7ab9c77312d4"
-        case .femaleVoice2:
+        case .Voice6:
             return "3ae4f876c3fb4f709737d117a68f388e"
-        case .femaleVoice3:
+        case .Voice7:
             return "1a11a76a04b3459d9741feb4cf29b1dd"
             
         }
@@ -39,7 +39,7 @@ enum Actor: String, CaseIterable {
 }
 class FishTTS {
     // API Configuration
-    private let apiToken = "Your API token"
+    private let apiToken = ""
     private let apiUrl = "https://api.fish.audio/v1/tts"
     
     // Audio Configuration
@@ -57,7 +57,7 @@ class FishTTS {
     
     // Voice actor options
     
-    var voiceActor: Actor = .maleVoice1 {
+    var voiceActor: Actor = .Voice1 {
         didSet {
             referenceIdInput = voiceActor.referenceId
         }

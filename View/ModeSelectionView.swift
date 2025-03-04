@@ -18,9 +18,16 @@ struct ModeSelectionView: View {
             Color("FlatBlue")
                 .ignoresSafeArea()
             VStack{
-                ModeLabelView(currentView: $currentView, labelTitle: "Music", labelImageName: "music.quarternote.3", toView: "MusicEmotionSelection")
+                Image("AppIcon-inverse")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 100)
+                Spacer()
+            }.frame(maxWidth: .infinity, alignment: .top)
+            VStack{
+                ModeLabelView(currentView: $currentView, labelTitle: "Music", labelDescription: "emotion-based music generation", labelImageName: "music.quarternote.3", toView: "MusicEmotionSelection")
                     .padding(.init(top: 0, leading: 0, bottom: 20, trailing: 0))
-                ModeLabelView(currentView: $currentView, labelTitle: "Maze", labelImageName: "puzzlepiece.extension.fill", toView: "MazeEmotionSelection")
+                ModeLabelView(currentView: $currentView, labelTitle: "Maze", labelDescription: "adaptive perception training", labelImageName: "puzzlepiece.extension.fill", toView: "MazeEmotionSelection")
             }
         }
         
@@ -32,6 +39,7 @@ struct ModeLabelView: View {
     @Binding var currentView: String
     @State private var isPressed = false
     var labelTitle: String
+    var labelDescription: String = ""
     var labelImageName: String
     var toView: String
     var body: some View {
@@ -49,13 +57,23 @@ struct ModeLabelView: View {
                     Image(systemName: labelImageName)
                         .dynamicTypeSize(isPressed ? .xxxLarge : .large)
                         .foregroundStyle(.black)
-                        .padding(.init(top: 0, leading: 0, bottom: 0, trailing: 150))
-                    Text(labelTitle)
-                        .font(.system(size: isPressed ? 24: 32))
-                        .bold()
-                        .foregroundStyle(.black)
-//                        .frame(width:130, height:140, alignment: .bottomTrailing)
-                }.padding(.init(top: 180, leading: 0, bottom: 35, trailing: 0))
+                        .padding(.init(top: 0, leading: 0, bottom: 0, trailing: 80))
+                    VStack{
+                        Text(labelTitle)
+                            .font(.system(size: isPressed ? 28: 36))
+                            .bold()
+                            .foregroundStyle(.black)
+                        Divider()
+                            //.padding(.init(top: 0, leading: 0, bottom: 15, trailing: 0))
+                        Text(labelDescription)
+                            .font(.system(size: isPressed ? 12 : 16))
+                            .foregroundStyle(.gray)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(width: 150, height: 220, alignment: .trailing)
+                    .padding(.init(top: 50, leading: 0, bottom: 0, trailing: 0))
+                }.padding(.init(top: 80, leading: 0, bottom: 35, trailing: 0))
+                    .frame(width: 280, height: 250)
             })
             .simultaneousGesture(
                 DragGesture(minimumDistance: 0)

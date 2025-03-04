@@ -89,12 +89,6 @@ struct EmotionSelectionView: View {
 	// Button for playing existing music while generating
 	var ActionButton: some View{
 		HStack{
-			if(mode == "Music"){
-				Toggle(isOn: $isPlayExisting, label: {
-					Image(systemName: "archivebox.fill")
-						.padding(.init(top: 0, leading: 100, bottom: 0, trailing: 0))
-				})
-			}
 			Button(action: {
 				if !isLoading{
 					if mode == "Music" {
@@ -111,20 +105,16 @@ struct EmotionSelectionView: View {
 					}
 				}
 			}, label: {
-				if mode == "Music" {
-					Text("Generate Music")
+				ZStack{
+					RoundedRectangle(cornerRadius: 30)
+						.foregroundStyle(.white)
+						.shadow(radius: 10)
+					Text("Generate")
 						.bold()
-						.foregroundStyle(isLoading ? .gray: .white, .white)
-				} else {
-					HStack {
-						Text("Next")
-							.bold()
-							.foregroundStyle(.white)
-						Image(systemName: "arrow.right")
-							.foregroundStyle(.white)
-					}
-				}
-			}).padding(.init(top: 0, leading: 0, bottom: 0, trailing: 20))
+						.foregroundStyle(isLoading ? .gray: Color("DarkBlue"))
+						.font(.system(size: 22))
+				}.frame(width: 260, height: 65, alignment: .center)
+			})
 				.padding()
 		}
 		
@@ -139,14 +129,21 @@ struct EmotionSelectionView: View {
 				}, label: {
 					Image(systemName: "arrow.backward")
 						.foregroundStyle(.white)
-				}).frame(width: 160, height: 50, alignment: .topLeading)
-				
+				}).frame(width: 120, height: 50, alignment: .topLeading)
+				HStack{
+					Toggle(isOn: $isPlayExisting, label: {
+						Image(systemName: "archivebox.fill")
+							.foregroundStyle(.white)
+							.padding(.init(top: 0, leading: 100, bottom: 0, trailing: 0))
+					})
 				Button(action: {
 					isPresented = true
 				}, label: {
 					Image(systemName: "music.note.list")
 						.foregroundStyle(.white)
-				}).frame(width: 160, height: 50, alignment: .topTrailing)
+				})
+				}
+					.frame(width: 180, height: 50, alignment: .topLeading)
 			} else {
 				Button(action: {
 					currentView = "ModeSelection"
@@ -282,9 +279,6 @@ struct EmotionSelectionView: View {
 			musicLibraryManager.playMusic(named: trackName)
 			// Step 5: Play the downloaded music
 			do {
-				//					  audioPlayer = try AVAudioPlayer(contentsOf: filePath)
-				//					  audioPlayer?.play()
-				// Assign the new player item to the player
 				
 				print("Playing the composed track...")
 			} catch {
@@ -326,13 +320,13 @@ struct EmotionSelectionView: View {
 		]
 		
 		if let emotionEmojis = emojis[emotion] {
-//			return emotionEmojis.randomElement() ?? "🙂"
+			//			return emotionEmojis.randomElement() ?? "🙂"
 			return emotionEmojis[index]
 		} else {
 			return "🙂"
 		}
 	}
-
+	
 	
 	func switchColor(for emotion: String) -> String {
 		switch emotion {

@@ -11,11 +11,11 @@ struct MazeView: View {
     @StateObject var gptHistory = GPTHistory()
     @State var isPresent = false
     @State var isFishTTS = true
-    @State private var selectedVoice: Actor = .maleVoice1
+    @State private var selectedVoice: Actor = .Voice1
     var fishTTS = FishTTS()
     var ttsManager = TTSManager()
     
-    var openAI = OpenAIAPI(apiKey: "Your API Key")
+    var openAI = OpenAIAPI(apiKey: "")
     
     var body: some View {
         VStack {
@@ -80,6 +80,7 @@ struct MazeView: View {
         HStack{
             Button(action: {
                 currentView = "ModeSelection"
+                audioPlayer?.pause()
             }, label: {
                 Image(systemName: "arrow.backward")
                     .foregroundStyle(.black)
@@ -110,79 +111,144 @@ struct MazeView: View {
             .padding(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
         }
     }
+//    func initialInstruction() {
+//        if (!isBlock) {
+//            isBlock = true
+//            print("initialInstruction called")
+//            if let prompt = loadTextFromBundle(filename: "prompts") {
+//                openAI.generateText(prompt: "\(prompt)\n#Now the user's emotion is \(selectedEmotion) and the intensity is \(intensity) out of 1") { result in
+//                    switch result {
+//                    case .success(let generatedText):
+//                        let (concise, full) = separateResponse(response: generatedText)
+//                        
+//                        if let conciseText = concise {
+//                            displayedText = conciseText
+//                        }
+//                        
+//                        if let fullText = full {
+//                            print("Full version: \(fullText)")
+//                            gptHistory.addResponse(concise: conciseText, full: fullText) // Add response to history
+//                            if isFishTTS{
+//                                fishTTS.voiceActor = selectedVoice // Change voice actor if needed
+//                                fishTTS.ttsFishAudioTime(sentence: fullText)
+//                            }else{
+//                                ttsManager.speakText(fullText)
+//                            }
+//                        }
+//                        isBlock = false
+//                    case .failure(let error):
+//                        print("Error: \(error)")
+//                        isBlock = false
+//                    }
+//                }
+//            }
+//        }
+//    }
     func initialInstruction() {
-        if (!isBlock) {
-            isBlock = true
-            print("initialInstruction called")
-            if let prompt = loadTextFromBundle(filename: "prompts") {
-                openAI.generateText(prompt: "\(prompt)\n#Now the user's emotion is \(selectedEmotion) and the intensity is \(intensity) out of 1") { result in
-                    switch result {
-                    case .success(let generatedText):
-                        let (concise, full) = separateResponse(response: generatedText)
-                        
-                        if let conciseText = concise {
-                            displayedText = conciseText
-                        }
-                        
-                        if let fullText = full {
-                            print("Full version: \(fullText)")
-                            gptHistory.addResponse(fullText) // Add response to history
-                            if isFishTTS{
-                                fishTTS.voiceActor = selectedVoice // Change voice actor if needed
-                                fishTTS.ttsFishAudioTime(sentence: fullText)
-                            }else{
-                                ttsManager.speakText(fullText)
-                            }
-                        }
-                        isBlock = false
-                    case .failure(let error):
-                        print("Error: \(error)")
-                        isBlock = false
-                    }
+        guard !isBlock else { return }
+        
+        isBlock = true
+        print("initialInstruction called")
+        
+        // Load prompt text safely
+        guard let prompt = loadTextFromBundle(filename: "prompts") else {
+            print("Error: Failed to load prompts")
+            isBlock = false
+            return
+        }
+        
+        let fullPrompt = "\(prompt)\n#Now the user's emotion is \(selectedEmotion) and the intensity is \(intensity) out of 1"
+        
+        openAI.generateText(prompt: fullPrompt) { result in
+            defer { isBlock = false } // Ensures isBlock resets no matter what
+            
+            switch result {
+            case .success(let generatedText):
+                var (concise, full) = separateResponse(response: generatedText) // Declare as var
+                
+                // Safely unwrap concise before modifying it
+                if let conciseText = concise {
+                    let updatedConcise = replaceSemicolonWithNewline(in: conciseText) // Replace ";" with newline
+                    displayedText = updatedConcise // Update displayed text
+                    concise = updatedConcise // Store back in concise
                 }
+                
+                guard let fullText = full else {
+                    print("Error: Full text is nil")
+                    return
+                }
+                
+                print("Full version: \(fullText)")
+                gptHistory.addResponse(concise: concise, full: fullText) // Add response to history
+                
+                if isFishTTS {
+                    fishTTS.voiceActor = selectedVoice // Change voice actor if needed
+                    fishTTS.ttsFishAudioTime(sentence: fullText)
+                } else {
+                    ttsManager.speakText(fullText)
+                }
+                playRandomTrack(for: selectedEmotion, with: &audioPlayer, volume: 0.2)
+            case .failure(let error):
+                print("Error: \(error)")
             }
         }
     }
-    
+
+
     func keepGenerate(isLeft: Bool) {
-        if !isBlock{
-            isBlock = true
-            var pickedSide = "right"
-            if isLeft {
-                pickedSide = "left"
-            }
-            if let prompt = loadTextFromBundle(filename: "prompts_2") {
-                openAI.generateText(prompt: "\(prompt). The previous instruction is '\(gptHistory)' Now, The user chose \(pickedSide) side, keep generate. The user's emotion is\(selectedEmotion) and the intensity is \(intensity) out of 1.") { result in
-                    switch result {
-                    case .success(let generatedText):
-                        let (concise, full) = separateResponse(response: generatedText)
-                        
-                        if let conciseText = concise {
-                            displayedText = conciseText
-                            // Add response to history
-                            //
-                            
-                        }
-                        
-                        if let fullText = full {
-                            //                            print("Full version: \(fullText)")
-                            gptHistory.addResponse(fullText)
-                            if isFishTTS{
-                                fishTTS.voiceActor = selectedVoice // Change voice actor if needed
-                                fishTTS.ttsFishAudioTime(sentence: fullText)
-                            }else{
-                                ttsManager.speakText(fullText)
-                            }
-                        }
-                        isBlock = false
-                    case .failure(let error):
-                        print("Error: \(error)")
-                        isBlock = false
-                    }
+        guard !isBlock else { return }
+        
+        isBlock = true
+        let pickedSide = isLeft ? "left" : "right"
+
+        // Load prompt text safely
+        guard let prompt = loadTextFromBundle(filename: "prompts_2") else {
+            print("Error: Failed to load prompts_2")
+            isBlock = false
+            return
+        }
+        
+        let fullPrompt = """
+        \(prompt). The previous instruction is '\(gptHistory.history.last?.full ?? "N/A")'.
+        Now, the user chose the \(pickedSide) side, keep generating.
+        The user's emotion is \(selectedEmotion) and the intensity is \(intensity) out of 1.
+        """
+
+        openAI.generateText(prompt: fullPrompt) { result in
+            defer { isBlock = false } // Ensures isBlock resets
+
+            switch result {
+            case .success(let generatedText):
+                var (concise, full) = separateResponse(response: generatedText) // Declare as var
+
+                // Safely unwrap concise before modifying it
+                if let conciseText = concise {
+                    let updatedConcise = replaceSemicolonWithNewline(in: conciseText) // Replace ";" with newline
+                    displayedText = updatedConcise // Update displayed text
+                    concise = updatedConcise // Store back in concise
                 }
+
+                guard let fullText = full else {
+                    print("Error: Full text is nil")
+                    return
+                }
+
+                gptHistory.addResponse(concise: concise, full: fullText) // Add response to history
+                
+                if isFishTTS {
+                    fishTTS.voiceActor = selectedVoice // Change voice actor if needed
+                    fishTTS.ttsFishAudioTime(sentence: fullText)
+                } else {
+                    ttsManager.speakText(fullText)
+                }
+                
+                playRandomTrack(for: selectedEmotion, with: &audioPlayer, volume: 0.2)
+            case .failure(let error):
+                print("Error: \(error)")
             }
         }
     }
+
 }
 
 struct LeftRightButton: View {
@@ -222,24 +288,50 @@ struct LeftRightButton: View {
     }
 }
 
+//func separateResponse(response: String) -> (concise: String?, full: String?) {
+//    // Regular expression to match the concise version within the square brackets
+//    let concisePattern = "\\[(.*?)\\]"
+//    
+//    var conciseText: String? = nil
+//    var fullText: String? = nil
+//    
+//    // Find concise version using regular expression
+//    if let conciseRange = response.range(of: concisePattern, options: .regularExpression) {
+//        conciseText = response[conciseRange].replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "")
+//    }
+//    
+//    // The full version is the entire response, so just assign the full response
+//    fullText = response
+//    
+//    // Return both concise and full version as a tuple
+//    return (conciseText, fullText)
+//}
 func separateResponse(response: String) -> (concise: String?, full: String?) {
-    // Regular expression to match the concise version within the square brackets
+    // Regular expression to match the concise version within square brackets, allowing multiline content
     let concisePattern = "\\[(.*?)\\]"
     
     var conciseText: String? = nil
-    var fullText: String? = nil
+    var fullText: String = response
     
     // Find concise version using regular expression
     if let conciseRange = response.range(of: concisePattern, options: .regularExpression) {
-        conciseText = response[conciseRange].replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "")
+        // Extract the content between the brackets
+        conciseText = String(response[conciseRange])
+            .replacingOccurrences(of: "[", with: "")
+            .replacingOccurrences(of: "]", with: "")
+        
+        // Remove the concise part from the full text
+        fullText.removeSubrange(conciseRange)
     }
     
-    // The full version is the entire response, so just assign the full response
-    fullText = response
+    // Trim whitespace from the full text in case the concise part was at the beginning or end
+    fullText = fullText.trimmingCharacters(in: .whitespacesAndNewlines)
     
-    // Return both concise and full version as a tuple
-    return (conciseText, fullText)
+    // Return concise and full text
+    return (conciseText, fullText.isEmpty ? nil : fullText)
 }
+
+
 
 
 struct MazeView_Previews: PreviewProvider {
@@ -249,4 +341,8 @@ struct MazeView_Previews: PreviewProvider {
     static var previews: some View {
         MazeView(currentView: $currentView, selectedEmotion: $selectedEmotion, intensity: $intensity, gptHistory: GPTHistory())
     }
+}
+
+func replaceSemicolonWithNewline(in text: String) -> String {
+    return text.replacingOccurrences(of: ";", with: "\n")
 }
